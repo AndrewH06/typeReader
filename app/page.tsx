@@ -7,7 +7,7 @@ export default function Home() {
   const [input, setInput] = useState("");
   const [text, setText] = useState("");
   const [size, setSize] = useState(30);
-  const [showStats, setShowStats] = useState(false);
+  const [showStats, setShowStats] = useState(true);
   const [caps, setCaps] = useState(false);
   const [punc, setPunc] = useState(false);
   const [mistakes, setMistakes] = useState(false);

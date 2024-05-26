@@ -77,9 +77,12 @@ const TypeTest: React.FC<TypeTestProps> = ({
         typedChar === currentChar?.textContent ||
         (typedChar === " " && currentChar?.textContent === "\u00A0")
       ) {
+        console.log("correct");
         currentChar?.classList.remove("bg-cyan-500/70");
         currentChar?.classList.remove("bg-red-500");
         currentChar?.classList.add("text-emerald-500");
+        nextChar?.classList.add("bg-cyan-500/70");
+        setCharIndex(charIndex + 1);
         if (
           punctuationMode &&
           nextChar?.textContent &&
@@ -94,16 +97,16 @@ const TypeTest: React.FC<TypeTestProps> = ({
             nextNextChar?.classList.add("bg-cyan-500/70");
             setCharIndex(charIndex + 2);
           }
-        } else {
-          nextChar?.classList.add("bg-cyan-500/70");
-          setCharIndex(charIndex + 1);
         }
       } else {
         currentChar?.classList.remove("bg-cyan-500/70");
         currentChar?.classList.add("bg-red-500");
-        nextChar?.classList.add("bg-cyan-500/70");
+        console.log("mistake");
         setMistakes(mistakes + 1);
-        if (mistakesMode) setCharIndex(charIndex + 1);
+        if (mistakesMode) {
+          setCharIndex(charIndex + 1);
+          nextChar?.classList.add("bg-cyan-500/70");
+        }
       }
 
       if (charIndex >= characters.length - 1) {
@@ -157,7 +160,7 @@ const TypeTest: React.FC<TypeTestProps> = ({
               <>
                 <span
                   key={i}
-                  className={`text-2xl font-bold text-gray-200 min-w-2 ${
+                  className={`text-2xl font-bold  min-w-2 ${
                     i === 0 && "bg-cyan-500/70"
                   }`}
                   // @ts-ignore
