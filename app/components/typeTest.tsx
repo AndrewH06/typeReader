@@ -1,4 +1,5 @@
 import { use, useEffect, useRef, useState } from "react";
+import { IoArrowBackOutline } from "react-icons/io5";
 
 interface TypeTestProps {
   text: string;
@@ -26,6 +27,7 @@ const TypeTest: React.FC<TypeTestProps> = ({
   const [charIndex, setCharIndex] = useState<number>(0);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [breakpoint, setBreakpoint] = useState<boolean>(false);
+  const [finished, setFinished] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
@@ -45,7 +47,19 @@ const TypeTest: React.FC<TypeTestProps> = ({
     "]",
     "'",
     '"',
+    "’",
+    "”",
+    "“",
+    "`",
+    "´",
   ];
+
+  const impossibleToPossible: { [key: string]: string } = {
+    "´": "`",
+    "’": "'",
+    "”": '"',
+    "“": '"',
+  };
 
   const finishedTyping = () => {
     setIsTyping(false);
@@ -55,6 +69,7 @@ const TypeTest: React.FC<TypeTestProps> = ({
     const WPM = Math.floor(charRefs.current.length / 5 / minutes);
     setWPM(WPM);
     setTimediff(timeDiff);
+    setFinished(true);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,6 +108,7 @@ const TypeTest: React.FC<TypeTestProps> = ({
             setCharIndex(charIndex + 2);
             finishedTyping();
           } else {
+            nextChar?.classList.remove("bg-cyan-500/70");
             nextChar?.classList.add("text-emerald-500");
             nextNextChar?.classList.add("bg-cyan-500/70");
             setCharIndex(charIndex + 2);
@@ -140,13 +156,15 @@ const TypeTest: React.FC<TypeTestProps> = ({
 
   return (
     <div
-      className="min-h-screen min-w-screen flex flex-col gap-8 items-center px-64"
+      className="min-h-screen min-w-screen flex flex-col gap-8 px-64"
       onClick={() => inputRef.current?.focus()}>
-      <button
-        onClick={onRestart}
-        className="text-gray-200 font-bold text-lg underline">
-        Restart
-      </button>
+      <div className="flex">
+        <button
+          onClick={onRestart}
+          className="flex text-gray-300 font-bold text-3xl">
+          <IoArrowBackOutline />
+        </button>
+      </div>
       <div className="flex flex-col gap-4 items-center">
         <input
           type="text"
@@ -165,7 +183,11 @@ const TypeTest: React.FC<TypeTestProps> = ({
                   }`}
                   // @ts-ignore
                   ref={(e) => (charRefs.current[i] = e)}>
-                  {char === " " ? "\u00A0" : char}
+                  {impossibleToPossible[char]
+                    ? impossibleToPossible[char]
+                    : char === " "
+                    ? "\u00A0"
+                    : char}
                 </span>
               </>
             ))}
