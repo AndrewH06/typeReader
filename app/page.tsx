@@ -2,6 +2,14 @@
 
 import { useEffect, useState } from "react";
 import TypeTest from "./components/typeTest";
+import { IoArrowBackOutline } from "react-icons/io5";
+
+interface Stats {
+  time: number;
+  mistakes: number;
+  WPM: number;
+  timediff: number;
+}
 
 export default function Home() {
   const [input, setInput] = useState("");
@@ -11,20 +19,101 @@ export default function Home() {
   const [caps, setCaps] = useState(false);
   const [punc, setPunc] = useState(false);
   const [mistakes, setMistakes] = useState(false);
+  const [result, setResult] = useState<string[]>([]);
+  const [currentChunk, setCurrentChunk] = useState(0);
+  const [stats, setStats] = useState<Stats[]>([]);
+
+  function handleStats(newVal: {
+    time: number;
+    mistakes: number;
+    WPM: number;
+    timediff: number;
+  }) {
+    setStats((stats) => [...stats, newVal]);
+  }
+
+  useEffect(() => {
+    const words = text.split(" ");
+    const result = [];
+    for (let i = 0; i < words.length; i += size) {
+      result.push(words.slice(i, i + size).join(" "));
+    }
+    setResult(result);
+    console.log(result);
+  }, [text]);
+
+  useEffect(() => {
+    setCurrentChunk(currentChunk);
+    console.log(currentChunk);
+  }, [currentChunk]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main className="flex min-h-screen flex-col items-center justify-between p-24 bg-zinc-900">
       <div className="w-full items-center justify-center">
-        {text ? (
-          <TypeTest
-            text={text.replace(/(\r\n|\n|\r)/gm, "")}
-            size={size}
-            showStats={showStats}
-            punctuationMode={punc}
-            capsMode={caps}
-            mistakesMode={mistakes}
-            onRestart={() => setText("")}
-          />
+        {result.length > 0 && result[0].length > 1 ? (
+          currentChunk >= result.length ? (
+            <div className="flex flex-col mx-64 py-8 px-12 text-gray-200">
+              <div className="flex">
+                <button
+                  onClick={() => {
+                    setText("");
+                    setCurrentChunk(0);
+                    setStats([]);
+                  }}
+                  className="flex text-gray-300 font-bold text-3xl">
+                  <IoArrowBackOutline />
+                </button>
+              </div>
+              <div className="flex flex-col gap-10">
+                <div className="flex flex-col items-center gap-2">
+                  <p className="text-4xl font-bold ">Summary</p>
+                  <div className="flex flex-col text-center text-gray-400">
+                    <p className="text-sm">
+                      Nice work! You finished your reading!
+                    </p>
+                    <p className="text-sm">Let's see how you did..</p>
+                  </div>
+                </div>
+                <div className="flex flex-auto gap-24 w-full">
+                  {stats &&
+                    stats.map((stat, i) => (
+                      <div key={i}>
+                        <p>Chunk {i + 1}</p>
+                        <p>Mistakes: {stat.mistakes}</p>
+                        <p>WPM: {stat.WPM}</p>
+                        <p>Time: {stat.timediff / 1000}</p>
+                      </div>
+                    ))}
+                </div>
+                <div className="">
+                  <p>Total words read: {text.length}</p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            result.map(
+              (part, i) =>
+                i === currentChunk && (
+                  <TypeTest
+                    text={part.replace(/(\r\n|\n|\r)/gm, "")}
+                    size={size}
+                    showStats={showStats}
+                    punctuationMode={punc}
+                    capsMode={caps}
+                    mistakesMode={mistakes}
+                    onRestart={() => {
+                      setText("");
+                      setCurrentChunk(0);
+                      setStats([]);
+                    }}
+                    finished={() => {
+                      setCurrentChunk(i + 1);
+                    }}
+                    changeStats={handleStats}
+                  />
+                )
+            )
+          )
         ) : (
           <div className="flex gap-8">
             <div className="w-[20%] flex flex-col justify-between">

@@ -1,4 +1,6 @@
 import { use, useEffect, useRef, useState } from "react";
+
+import Explosion from "react-canvas-confetti/dist/presets/fireworks";
 import { IoArrowBackOutline } from "react-icons/io5";
 
 interface TypeTestProps {
@@ -9,6 +11,13 @@ interface TypeTestProps {
   capsMode: boolean;
   mistakesMode: boolean;
   onRestart: () => void;
+  finished: () => void;
+  changeStats: (newVal: {
+    time: number;
+    mistakes: number;
+    WPM: number;
+    timediff: number;
+  }) => void;
 }
 
 const TypeTest: React.FC<TypeTestProps> = ({
@@ -19,6 +28,8 @@ const TypeTest: React.FC<TypeTestProps> = ({
   capsMode,
   mistakesMode,
   onRestart,
+  finished,
+  changeStats,
 }) => {
   const [time, setTime] = useState<number>(0);
   const [mistakes, setMistakes] = useState<number>(0);
@@ -26,12 +37,10 @@ const TypeTest: React.FC<TypeTestProps> = ({
   const [timediff, setTimediff] = useState<number>(0);
   const [charIndex, setCharIndex] = useState<number>(0);
   const [isTyping, setIsTyping] = useState<boolean>(false);
-  const [breakpoint, setBreakpoint] = useState<boolean>(false);
-  const [finished, setFinished] = useState<boolean>(false);
+  const [done, setDone] = useState<boolean>(false);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
-
-  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
   const punctuation = [
     ".",
@@ -61,6 +70,19 @@ const TypeTest: React.FC<TypeTestProps> = ({
     "“": '"',
   };
 
+  const wordsOfEncouragement = [
+    "Nice!",
+    "Keep going!",
+    "You're doing great!",
+    "Don't stop now!",
+    "Keep it up!",
+    "Boo ya!!",
+    "You're on fire!",
+    "You're a typing wizard!",
+    "You're a typing ninja!",
+    "You're a typing machine!",
+  ];
+
   const finishedTyping = () => {
     setIsTyping(false);
     const endTime = new Date().getTime();
@@ -69,7 +91,17 @@ const TypeTest: React.FC<TypeTestProps> = ({
     const WPM = Math.floor(charRefs.current.length / 5 / minutes);
     setWPM(WPM);
     setTimediff(timeDiff);
-    setFinished(true);
+    setDone(true);
+  };
+
+  const nextChunk = () => {
+    finished();
+    changeStats({
+      time: time,
+      mistakes: mistakes,
+      WPM: WPM,
+      timediff: timediff,
+    });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,7 +111,7 @@ const TypeTest: React.FC<TypeTestProps> = ({
     let nextNextChar = charRefs.current[charIndex + 2];
     let typedChar = e.target.value.slice(-1);
 
-    if (charIndex <= characters.length) {
+    if (charIndex <= characters.length - 1) {
       if (!isTyping) {
         setTime(new Date().getTime());
         setIsTyping(true);
@@ -92,7 +124,6 @@ const TypeTest: React.FC<TypeTestProps> = ({
         typedChar === currentChar?.textContent ||
         (typedChar === " " && currentChar?.textContent === "\u00A0")
       ) {
-        console.log("correct");
         currentChar?.classList.remove("bg-cyan-500/70");
         currentChar?.classList.remove("bg-red-500");
         currentChar?.classList.add("text-emerald-500");
@@ -117,7 +148,6 @@ const TypeTest: React.FC<TypeTestProps> = ({
       } else {
         currentChar?.classList.remove("bg-cyan-500/70");
         currentChar?.classList.add("bg-red-500");
-        console.log("mistake");
         setMistakes(mistakes + 1);
         if (mistakesMode) {
           setCharIndex(charIndex + 1);
@@ -208,9 +238,30 @@ const TypeTest: React.FC<TypeTestProps> = ({
                 Accuracy:{" "}
                 {mistakes === 0
                   ? 100
+                  : charIndex === 0
+                  ? 0
                   : Math.round(((charIndex - mistakes) / charIndex) * 100)}
                 %
               </span>
+            </div>
+          </div>
+        )}
+        {done && (
+          <div className="mt-12 flex flex-col justify-center">
+            <Explosion autorun={{ speed: 1, duration: 3000 }} />
+            <p className="text-xl font-bold">
+              {
+                wordsOfEncouragement[
+                  Math.floor(Math.random() * wordsOfEncouragement.length)
+                ]
+              }
+            </p>
+            <div className="flex justify-center">
+              <button
+                onClick={() => nextChunk()}
+                className="flex justify-center font-bold bg-emerald-500 text-gray-200 px-4 py-2 rounded-md mt-4 hover:bg-emerald-600 transition-colors duration-300 ease-in-out">
+                Next
+              </button>
             </div>
           </div>
         )}
