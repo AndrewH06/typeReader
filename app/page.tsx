@@ -48,7 +48,7 @@ export default function Home() {
   }, [currentChunk]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24 bg-zinc-900">
+    <main className="flex min-h-screen flex-col items-center justify-between p-24 bg-zinc-900 text-gray-100">
       <div className="w-full items-center justify-center">
         {result.length > 0 && result[0].length > 1 ? (
           currentChunk >= result.length ? (
